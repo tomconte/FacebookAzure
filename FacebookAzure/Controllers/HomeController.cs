@@ -22,6 +22,7 @@ namespace FacebookAzure.Controllers
             dynamic me = fb.Get("me");
             dynamic likes = fb.Get("me/likes");
 
+            ViewBag.id = me.id;
             ViewBag.name = me.name;
             ViewBag.firstname = me.first_name;
             ViewBag.hometown = me.hometown.name;
@@ -29,7 +30,21 @@ namespace FacebookAzure.Controllers
             ViewBag.likes = likes.data;
 
             FriendLikesService service = new FriendLikesService(me.id, fb.AccessToken);
-            service.GetFriendsLikes();
+
+            if (service.HaveCachedFriendsLikes() == true)
+            {
+                // We can deal with this directly
+                service.GetFriendsLikes(); // FAST!
+            }
+            else
+            {
+                // Need to send this to the Worker Role
+                //service.GetFriendsLikes(); // SLOW!
+                service.QueueLike();
+                return View("PleaseWait");
+            }
+
+            ViewBag.friendLikes = service.GetOrderedFriendLikes();
 
             return View();
         }

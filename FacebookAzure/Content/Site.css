@@ -5,14 +5,14 @@ body
     background-color: #fff;
 }
 
-ul 
+.mylikes 
 {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 
-li 
+.mylikes li 
 {
     float: left;
     padding: 1px;

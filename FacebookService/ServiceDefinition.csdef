@@ -18,4 +18,12 @@
       <Setting name="DataConnectionString" />
     </ConfigurationSettings>
   </WebRole>
+  <WorkerRole name="FacebookWorker">
+    <Imports>
+      <Import moduleName="Diagnostics" />
+    </Imports>
+    <ConfigurationSettings>
+      <Setting name="DataConnectionString" />
+    </ConfigurationSettings>
+  </WorkerRole>
 </ServiceDefinition>

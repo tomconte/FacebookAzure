@@ -42,6 +42,13 @@
       <RoleType>Web</RoleType>
       <RoleName>FacebookAzure</RoleName>
     </ProjectReference>
+    <ProjectReference Include="..\FacebookWorker\FacebookWorker.csproj">
+      <Name>FacebookWorker</Name>
+      <Project>{907eef79-edfd-4e4c-8da2-a55e3a69067b}</Project>
+      <Private>True</Private>
+      <RoleType>Worker</RoleType>
+      <RoleName>FacebookWorker</RoleName>
+    </ProjectReference>
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>
