@@ -23,7 +23,7 @@ namespace FacebookWorker
             var tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
 
             var queueClient = account.CreateCloudQueueClient();
-            var queue = queueClient.GetQueueReference("LikesQueue");
+            var queue = queueClient.GetQueueReference("likesqueue");
 
             while (true)
             {
