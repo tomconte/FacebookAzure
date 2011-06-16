@@ -57,7 +57,7 @@
     <Compile Include="FriendLikesContext.cs" />
     <Compile Include="FriendLike.cs" />
     <Compile Include="FriendLikesService.cs" />
-    <Compile Include="HaveFriendLike.cs" />
+    <Compile Include="FriendLikeState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

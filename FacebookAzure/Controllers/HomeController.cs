@@ -20,21 +20,25 @@ namespace FacebookAzure.Controllers
         {
             var fb = new FacebookWebClient();
             dynamic me = fb.Get("me");
-            dynamic likes = fb.Get("me/likes");
 
             ViewBag.id = me.id;
             ViewBag.name = me.name;
             ViewBag.firstname = me.first_name;
             ViewBag.hometown = me.hometown.name;
 
-            ViewBag.likes = likes.data;
-
             FriendLikesService service = new FriendLikesService(me.id, fb.AccessToken);
 
-            if (service.HaveCachedFriendsLikes() == true)
+            var state = service.GetState();
+
+            if (state == "cached")
             {
                 // We can deal with this directly
                 service.GetFriendsLikes(); // FAST!
+                ViewBag.friendLikes = service.GetOrderedFriendLikes();
+            }
+            else if (state == "inprogress")
+            {
+                return View("PleaseWait");
             }
             else
             {
@@ -43,8 +47,6 @@ namespace FacebookAzure.Controllers
                 service.QueueLike();
                 return View("PleaseWait");
             }
-
-            ViewBag.friendLikes = service.GetOrderedFriendLikes();
 
             return View();
         }

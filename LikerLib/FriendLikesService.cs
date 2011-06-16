@@ -13,13 +13,12 @@ namespace LikerLib
     public class FriendLikesService
     {
         private const string FRIENDS_LIKES_TABLE = "FriendsLikes";
-        private const string HAVE_FRIENDS_LIKES_TABLE = "HaveFriendsLikes";
+        private const string FRIENDS_LIKES_STATE_TABLE = "FriendsLikesState";
         public String AccessToken { get; set; }
         public String UserId { get; set; }
         public Dictionary<string, FriendLike> FriendLikes { get; set; }
         private CloudStorageAccount account;
         private CloudTableClient tableClient;
-        private TableServiceContext context;
 
         public FriendLikesService(string id, String token)
         {
@@ -28,28 +27,75 @@ namespace LikerLib
             account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
             tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
             tableClient.CreateTableIfNotExist(FRIENDS_LIKES_TABLE); // MOVE THIS OUT
-            tableClient.CreateTableIfNotExist(HAVE_FRIENDS_LIKES_TABLE); // MOVE THIS OUT
-            context = tableClient.GetDataServiceContext();
+            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_STATE_TABLE); // MOVE THIS OUT
         }
 
-        // Lightweight constructor, used by the JSON controller only
+        // Lightweight (no access token) constructor, used by the JSON controller only
         public FriendLikesService(string id)
         {
             this.UserId = id;
             account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
             tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
-            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_TABLE);
-            tableClient.CreateTableIfNotExist(HAVE_FRIENDS_LIKES_TABLE); // MOVE THIS OUT
-            context = tableClient.GetDataServiceContext();
+            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_TABLE); // MOVE THIS OUT
+            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_STATE_TABLE); // MOVE THIS OUT
         }
 
-        public bool HaveCachedFriendsLikes()
+        public string GetState()
         {
-            var query = tableClient.GetDataServiceContext().CreateQuery<HaveFriendLike>(HAVE_FRIENDS_LIKES_TABLE).Where(l => l.RowKey == UserId);
-            if (query.ToList().Count > 0)
-                return true;
+            FriendLikeState friendLikeState;
+
+            var q = tableClient.GetDataServiceContext().
+                CreateQuery<FriendLikeState>(FRIENDS_LIKES_STATE_TABLE).
+                AsTableServiceQuery<FriendLikeState>();
+
+            if (q.FirstOrDefault() == null)
+            {
+                friendLikeState = new FriendLikeState(UserId, "unknown");
+            }
             else
-                return false;
+            {
+                var a = q.Where(l => l.RowKey == UserId && l.PartitionKey == "0").ToArray();
+                if (a.Count() == 0)
+                    friendLikeState = new FriendLikeState(UserId, "unknown");
+                else
+                    friendLikeState = a[0];
+            }
+            
+            return friendLikeState.Status;
+        }
+
+        public void SetState(string state)
+        {
+            FriendLikeState friendLikeState;
+
+            var context = tableClient.GetDataServiceContext();
+
+            var q = context.
+                CreateQuery<FriendLikeState>(FRIENDS_LIKES_STATE_TABLE).
+                AsTableServiceQuery<FriendLikeState>();
+
+            if (q.FirstOrDefault() == null)
+            {
+                friendLikeState = new FriendLikeState(UserId, state);
+                context.AddObject(FRIENDS_LIKES_STATE_TABLE, friendLikeState);
+            }
+            else
+            {
+                var a = q.Where(l => l.RowKey == UserId && l.PartitionKey == "0").ToArray();
+                if (a.Count() == 0)
+                {
+                    friendLikeState = new FriendLikeState(UserId, state);
+                    context.AddObject(FRIENDS_LIKES_STATE_TABLE, friendLikeState);
+                }
+                else
+                {
+                    a[0].Status = state;
+                }
+            }
+
+            // Save to Table Storage
+
+            context.SaveChanges();
         }
 
         public void GetFriendsLikes()
@@ -58,12 +104,18 @@ namespace LikerLib
 
             // If we have previously cached the friend likes for this user, use them
             // TODO: we probably need a way to refresh the data from time to time
-            var isCachedQuery = tableClient.GetDataServiceContext().CreateQuery<HaveFriendLike>(HAVE_FRIENDS_LIKES_TABLE).Where(l => l.RowKey == UserId);
+            var state = GetState();
+            //tableClient.GetDataServiceContext().CreateQuery<FriendLikeState>(FRIENDS_LIKES_STATE_TABLE).Where(l => l.RowKey == UserId);
 
-            if (isCachedQuery.ToList().Count > 0)
+            if (state == "cached")
             {
-                var query = tableClient.GetDataServiceContext().CreateQuery<FriendLike>(FRIENDS_LIKES_TABLE).Where(l => l.PartitionKey == UserId);
-                FriendLikes = query.ToDictionary(l => l.RowKey);
+                var query = tableClient.
+                    GetDataServiceContext().
+                    CreateQuery<FriendLike>(FRIENDS_LIKES_TABLE);
+
+                var likes = (from l in query where l.PartitionKey == UserId select l).AsTableServiceQuery();
+
+                FriendLikes = likes.ToDictionary(l => l.RowKey);
             }
             else
             {
@@ -94,15 +146,13 @@ namespace LikerLib
         {
             // Persist friend likes to Table Storage
 
+            var context = tableClient.GetDataServiceContext();
+
             foreach (var k in FriendLikes.Keys)
             {
                 context.AddObject(FRIENDS_LIKES_TABLE, FriendLikes[k]);
             }
-            context.SaveChanges();
 
-            // Now that we have cached the user's friends' likes, raise the flag
-
-            context.AddObject(HAVE_FRIENDS_LIKES_TABLE, new HaveFriendLike(UserId));
             context.SaveChanges();
         }
 

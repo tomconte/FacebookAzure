@@ -6,17 +6,17 @@ using Microsoft.WindowsAzure.StorageClient;
 
 namespace LikerLib
 {
-    public class HaveFriendLike : TableServiceEntity
+    public class FriendLikeState : TableServiceEntity
     {
-        public bool IsCached { get; set; }
+        public string Status { get; set; }
 
-        public HaveFriendLike(string userId)
+        public FriendLikeState(string userId, string status)
             : base("0", userId)
         {
-            this.IsCached = true;
+            this.Status = status;
         }
 
-        public HaveFriendLike()
+        public FriendLikeState()
             : base()
         {
         }

@@ -30,15 +30,25 @@ namespace FacebookWorker
                 Thread.Sleep(10000);
                 Trace.WriteLine("Working", "Information");
 
-                var msg = queue.GetMessage();
+                var msg = queue.GetMessage(TimeSpan.FromMinutes(3));
                 if (msg != null)
                 {
                     var p = msg.AsString.Split('%');
                     Trace.WriteLine("Processing " + p[0], "Information");
                     // TODO: start new thread
                     var service = new FriendLikesService(p[0], p[1]);
-                    service.GetFriendsLikes();
-                    service.SaveFriendLikes();
+                    string state = service.GetState();
+                    if (state == "cached" || state == "inprogress")
+                    {
+                        Trace.WriteLine("Already in cache or in progress " + p[0], "Information");
+                    }
+                    else
+                    {
+                        service.SetState("inprogress");
+                        service.GetFriendsLikes();
+                        service.SaveFriendLikes();
+                        service.SetState("cached");
+                    }
                     queue.DeleteMessage(msg);
                 }
 
