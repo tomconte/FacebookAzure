@@ -18,7 +18,7 @@ namespace FacebookAzure.Controllers
         [CanvasAuthorize(Permissions="user_about_me,user_likes,friends_likes")]
         public ActionResult Index()
         {
-            var fb = new FacebookWebClient();
+            var fb = new FacebookWebClient(); 
             dynamic me = fb.Get("me");
 
             ViewBag.id = me.id;
@@ -35,6 +35,12 @@ namespace FacebookAzure.Controllers
                 // We can deal with this directly
                 service.GetFriendsLikes(); // FAST!
                 ViewBag.friendLikes = service.GetOrderedFriendLikes();
+                var cats = service.GetCategories().OrderByDescending(k => k.Value).ToList();
+                var max = cats.Max(k => k.Value);
+                var min = cats.Min(k => k.Value);
+                ViewBag.categories = cats;
+                ViewBag.max = max;
+                ViewBag.min = min;
             }
             else if (state == "inprogress")
             {

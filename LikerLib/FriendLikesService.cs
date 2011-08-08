@@ -89,7 +89,9 @@ namespace LikerLib
                 }
                 else
                 {
+                    // BUG: does not update the state
                     a[0].Status = state;
+                    friendLikeState = a[0]; // Keep reference to object for context save?
                 }
             }
 
@@ -169,6 +171,26 @@ namespace LikerLib
             }
 
             return orderedLikes;
+        }
+
+        public Dictionary<string, int> GetCategories()
+        {
+            var categories = new Dictionary<string, int>();
+
+            foreach (var k in FriendLikes)
+            {
+                var v = k.Value.Category;
+                if (categories.ContainsKey(v))
+                {
+                    categories[v]++;
+                }
+                else
+                {
+                    categories[v] = 1;
+                }
+            }
+
+            return categories;
         }
 
         public void QueueLike()

@@ -13,6 +13,7 @@ namespace FacebookAzure.Controllers
         // GET: /Likes/
 
         [HttpGet]
+        [OutputCache(NoStore=true, Duration=0, VaryByParam="*")]
         public ActionResult IsCached(string id)
         {
             var service = new FriendLikesService(id);

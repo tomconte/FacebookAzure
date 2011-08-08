@@ -15,6 +15,7 @@ namespace LikerLib
             : base(userId, pageId)
         {
             this.Nb = 1;
+            this.Id = pageId;
             this.Name = name;
             this.Category = category;
             this.Picture = picture;
@@ -26,6 +27,7 @@ namespace LikerLib
         }
 
         public int Nb { get; set; }
+        public string Id { get; set; }
         public String Name { get; set; }
         public String Category { get; set; }
         public String Picture { get; set; }

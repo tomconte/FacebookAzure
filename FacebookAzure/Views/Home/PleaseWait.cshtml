@@ -7,6 +7,7 @@
 <div id="message"></div>
 
 <script type="text/javascript">
+    // TODO: problème de 304 Not Modified, continue de renvoyer false même quand le status est passé à true dans la table
     $(document).ready(function () {
         var id = @ViewBag.id;
         setInterval(function () {
