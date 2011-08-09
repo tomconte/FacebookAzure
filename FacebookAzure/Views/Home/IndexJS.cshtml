@@ -9,14 +9,12 @@
 <script type="text/javascript"">
     $(document).ready(function () {
         var id = @ViewBag.id;
-        $('#container').isotope({
-            itemSelector: '.like'
-        });
         $.ajax({
             url: 'http://127.0.0.1:10000/devstoreaccount1/friendlikes/' + id,
             dataType: 'jsonp',
             jsonpCallback: 'dataCallback',
             success: function (data) {
+                // Create the items
                 $.each(data, function (i, v) {
                     var $item = '<div class="like ' + v.Category + '">' + 
                     '<h3 class="name">' + v.Name + '</h3>' + 
@@ -25,7 +23,10 @@
                     '</div>';
                     $('#container').append($item);
                 });
-                $('#container').isotope();
+                // Call isotope
+                $('#container').isotope({
+                    itemSelector: '.like'
+                });
             }
         });
     });

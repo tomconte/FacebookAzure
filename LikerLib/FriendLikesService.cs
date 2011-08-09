@@ -92,7 +92,9 @@ namespace LikerLib
                         }
                         else
                         {
-                            FriendLikes[l.id] = new FriendLike(UserId, l.id, l.name, l.category, l.picture);
+                            // Clean up the category field
+                            var category = l.category.ToLower().Replace('/', '-').Replace(' ', '-');
+                            FriendLikes[l.id] = new FriendLike(UserId, l.id, l.name, category, l.picture);
                         }
                     }
                 }
