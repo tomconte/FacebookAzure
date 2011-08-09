@@ -7,27 +7,35 @@ using Facebook.Web;
 using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
+using Newtonsoft.Json;
 
 namespace LikerLib
 {
     public class FriendLikesService
     {
-        private const string FRIENDS_LIKES_TABLE = "FriendsLikes";
-        private const string FRIENDS_LIKES_STATE_TABLE = "FriendsLikesState";
+        private const string FRIEND_LIKES_TABLE = "friendlikes";
+        private const string FRIEND_LIKES_BLOB_CONTAINER = "friendlikes";
         public String AccessToken { get; set; }
         public String UserId { get; set; }
         public Dictionary<string, FriendLike> FriendLikes { get; set; }
         private CloudStorageAccount account;
         private CloudTableClient tableClient;
+        private CloudBlobClient blobClient;
+        private CloudBlobContainer blobContainer;
 
         public FriendLikesService(string id, String token)
         {
             this.AccessToken = token;
             this.UserId = id;
             account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
+            // Create the Table client
             tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
-            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_TABLE); // MOVE THIS OUT
-            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_STATE_TABLE); // MOVE THIS OUT
+
+            // Create the Blob Container
+            blobClient = new CloudBlobClient(account.BlobEndpoint.ToString(), account.Credentials); 
+            blobContainer = blobClient.GetContainerReference(FRIEND_LIKES_BLOB_CONTAINER);
+            blobContainer.CreateIfNotExist(); // TODO: MOVE THIS OUT?
+            blobContainer.SetPermissions(new BlobContainerPermissions() { PublicAccess = BlobContainerPublicAccessType.Blob });
         }
 
         // Lightweight (no access token) constructor, used by the JSON controller only
@@ -36,84 +44,31 @@ namespace LikerLib
             this.UserId = id;
             account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
             tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
-            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_TABLE); // MOVE THIS OUT
-            tableClient.CreateTableIfNotExist(FRIENDS_LIKES_STATE_TABLE); // MOVE THIS OUT
-        }
 
-        public string GetState()
-        {
-            FriendLikeState friendLikeState;
-
-            var q = tableClient.GetDataServiceContext().
-                CreateQuery<FriendLikeState>(FRIENDS_LIKES_STATE_TABLE).
-                AsTableServiceQuery<FriendLikeState>();
-
-            if (q.FirstOrDefault() == null)
-            {
-                friendLikeState = new FriendLikeState(UserId, "unknown");
-            }
-            else
-            {
-                var a = q.Where(l => l.RowKey == UserId && l.PartitionKey == "0").ToArray();
-                if (a.Count() == 0)
-                    friendLikeState = new FriendLikeState(UserId, "unknown");
-                else
-                    friendLikeState = a[0];
-            }
-            
-            return friendLikeState.Status;
-        }
-
-        public void SetState(string state)
-        {
-            FriendLikeState friendLikeState;
-
-            var context = tableClient.GetDataServiceContext();
-
-            var q = context.
-                CreateQuery<FriendLikeState>(FRIENDS_LIKES_STATE_TABLE).
-                AsTableServiceQuery<FriendLikeState>();
-
-            if (q.FirstOrDefault() == null)
-            {
-                friendLikeState = new FriendLikeState(UserId, state);
-                context.AddObject(FRIENDS_LIKES_STATE_TABLE, friendLikeState);
-            }
-            else
-            {
-                var a = q.Where(l => l.RowKey == UserId && l.PartitionKey == "0").ToArray();
-                if (a.Count() == 0)
-                {
-                    friendLikeState = new FriendLikeState(UserId, state);
-                    context.AddObject(FRIENDS_LIKES_STATE_TABLE, friendLikeState);
-                }
-                else
-                {
-                    // BUG: does not update the state
-                    a[0].Status = state;
-                    friendLikeState = a[0]; // Keep reference to object for context save?
-                }
-            }
-
-            // Save to Table Storage
-
-            context.SaveChanges();
+            // Create the Blob Container
+            blobClient = new CloudBlobClient(account.BlobEndpoint.ToString(), account.Credentials);
+            blobContainer = blobClient.GetContainerReference(FRIEND_LIKES_BLOB_CONTAINER);
+            blobContainer.CreateIfNotExist(); // TODO: MOVE THIS OUT?
+            blobContainer.SetPermissions(new BlobContainerPermissions() { PublicAccess = BlobContainerPublicAccessType.Blob });
         }
 
         public void GetFriendsLikes()
         {
             // Find all friend likes & store in Dictionary
 
+            // Create the table if necessary
+            tableClient.CreateTableIfNotExist(FRIEND_LIKES_TABLE); // MOVE THIS OUT?
+
             // If we have previously cached the friend likes for this user, use them
             // TODO: we probably need a way to refresh the data from time to time
-            var state = GetState();
-            //tableClient.GetDataServiceContext().CreateQuery<FriendLikeState>(FRIENDS_LIKES_STATE_TABLE).Where(l => l.RowKey == UserId);
+            // TODO: test existence of the response BLOB
+            // TODO: refresh if blob older than n days/hours?
 
-            if (state == "cached")
+            if (isCached())
             {
                 var query = tableClient.
                     GetDataServiceContext().
-                    CreateQuery<FriendLike>(FRIENDS_LIKES_TABLE);
+                    CreateQuery<FriendLike>(FRIEND_LIKES_TABLE);
 
                 var likes = (from l in query where l.PartitionKey == UserId select l).AsTableServiceQuery();
 
@@ -152,10 +107,35 @@ namespace LikerLib
 
             foreach (var k in FriendLikes.Keys)
             {
-                context.AddObject(FRIENDS_LIKES_TABLE, FriendLikes[k]);
+                context.AddObject(FRIEND_LIKES_TABLE, FriendLikes[k]);
             }
 
-            context.SaveChanges();
+            // TODO: for refreshes, need to handle updating the entities (or replacing)
+
+            context.SaveChangesWithRetries();
+
+            // Create the pre-calculated JSON Blob
+
+            var blob = blobContainer.GetBlobReference(UserId);
+            var likes = GetOrderedFriendLikes();
+            var json = JsonConvert.SerializeObject(likes);
+            blob.UploadText("dataCallback(" + json + ")");
+        }
+
+        public bool isCached()
+        {
+            var blob = blobContainer.GetBlobReference(UserId);
+
+            try
+            {
+                blob.FetchAttributes();
+            }
+            catch (StorageClientException ex)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public List<FriendLike> GetOrderedFriendLikes()
@@ -180,13 +160,16 @@ namespace LikerLib
             foreach (var k in FriendLikes)
             {
                 var v = k.Value.Category;
-                if (categories.ContainsKey(v))
+                if (!String.IsNullOrEmpty(v))
                 {
-                    categories[v]++;
-                }
-                else
-                {
-                    categories[v] = 1;
+                    if (categories.ContainsKey(v))
+                    {
+                        categories[v]++;
+                    }
+                    else
+                    {
+                        categories[v] = 1;
+                    }
                 }
             }
 

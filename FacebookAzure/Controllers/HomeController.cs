@@ -24,32 +24,28 @@ namespace FacebookAzure.Controllers
             ViewBag.id = me.id;
             ViewBag.name = me.name;
             ViewBag.firstname = me.first_name;
-            ViewBag.hometown = me.hometown.name;
 
             FriendLikesService service = new FriendLikesService(me.id, fb.AccessToken);
 
-            var state = service.GetState();
+            if (service.isCached())
+            {
+                //// The data is cached, we can retrieve it and use it server-side...
+                //// The ViewBag is used by the default Index view
+                //service.GetFriendsLikes();
+                //ViewBag.friendLikes = service.GetOrderedFriendLikes();
+                //var cats = service.GetCategories().OrderByDescending(k => k.Value).ToList();
+                //var max = cats.Max(k => k.Value);
+                //var min = cats.Min(k => k.Value);
+                //ViewBag.categories = cats;
+                //ViewBag.max = max;
+                //ViewBag.min = min;
 
-            if (state == "cached")
-            {
-                // We can deal with this directly
-                service.GetFriendsLikes(); // FAST!
-                ViewBag.friendLikes = service.GetOrderedFriendLikes();
-                var cats = service.GetCategories().OrderByDescending(k => k.Value).ToList();
-                var max = cats.Max(k => k.Value);
-                var min = cats.Min(k => k.Value);
-                ViewBag.categories = cats;
-                ViewBag.max = max;
-                ViewBag.min = min;
-            }
-            else if (state == "inprogress")
-            {
-                return View("PleaseWait");
+                // Return the IndexJS view to use the cached data on the client
+                return View("IndexJS");
             }
             else
             {
                 // Need to send this to the Worker Role
-                //service.GetFriendsLikes(); // SLOW!
                 service.QueueLike();
                 return View("PleaseWait");
             }

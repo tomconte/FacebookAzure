@@ -20,7 +20,6 @@ namespace FacebookWorker
             Trace.WriteLine("FacebookWorker entry point called", "Information");
 
             var account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
-            var tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
 
             var queueClient = account.CreateCloudQueueClient();
             var queue = queueClient.GetQueueReference("likesqueue");
@@ -30,24 +29,26 @@ namespace FacebookWorker
                 Thread.Sleep(10000);
                 Trace.WriteLine("Working", "Information");
 
-                var msg = queue.GetMessage(TimeSpan.FromMinutes(3));
+                var msg = queue.GetMessage(TimeSpan.FromMinutes(5)); // Let's give us five minutes to process
                 if (msg != null)
                 {
                     var p = msg.AsString.Split('%');
                     Trace.WriteLine("Processing " + p[0], "Information");
                     // TODO: start new thread
                     var service = new FriendLikesService(p[0], p[1]);
-                    string state = service.GetState();
-                    if (state == "cached" || state == "inprogress")
+                    // TODO: handle refreshes!
+                    if (service.isCached())
                     {
-                        Trace.WriteLine("Already in cache or in progress " + p[0], "Information");
+                        Trace.WriteLine("Already in cache, skipping " + p[0], "Information");
                     }
                     else
                     {
-                        service.SetState("inprogress");
+                        var watch = new Stopwatch();
+                        watch.Start();
                         service.GetFriendsLikes();
                         service.SaveFriendLikes();
-                        service.SetState("cached");
+                        watch.Stop();
+                        Trace.WriteLine("Done with " + p[0] + " time: " + watch.Elapsed, "Information");
                     }
                     queue.DeleteMessage(msg);
                 }
@@ -64,8 +65,6 @@ namespace FacebookWorker
             // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
 
             var account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
-            var tableClient = new CloudTableClient(account.TableEndpoint.ToString(), account.Credentials);
-            tableClient.CreateTableIfNotExist("FriendsLikes");
 
             var queueClient = account.CreateCloudQueueClient();
             var queue = queueClient.GetQueueReference("likesqueue");

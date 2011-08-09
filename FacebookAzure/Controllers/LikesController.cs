@@ -17,7 +17,7 @@ namespace FacebookAzure.Controllers
         public ActionResult IsCached(string id)
         {
             var service = new FriendLikesService(id);
-            return Json(service.GetState().Equals("cached"), JsonRequestBehavior.AllowGet);
+            return Json(service.isCached(), JsonRequestBehavior.AllowGet);
         }
     }
 }

@@ -4,8 +4,6 @@
 
 <h2>Hello @ViewBag.firstname</h2>
 
-How is the weather in @ViewBag.hometown ?
-
 <h2>Stuff your friends like</h2>
 
 <ul class="friendlikes">
@@ -14,6 +12,8 @@ How is the weather in @ViewBag.hometown ?
     <li>@i.Name (@i.Nb likes) id=@i.Id</li>
 }
 </ul>
+
+<h2>Most popular categories</h2>
 
 <ul class="friendlikes">
 @foreach (var i in ViewBag.categories)
