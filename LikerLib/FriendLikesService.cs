@@ -80,6 +80,7 @@ namespace LikerLib
 
                 // Let's use the Facebook Graph API to gather all the info
                 var fb = new FacebookClient(AccessToken);
+                // TODO: if the user logged out of Facebook in the meantime, he access token could be invalid and we will receive an exception!
                 dynamic friends = fb.Get("me/friends");
                 foreach (var f in friends.data)
                 {
@@ -114,7 +115,7 @@ namespace LikerLib
 
             // TODO: for refreshes, need to handle updating the entities (or replacing)
 
-            context.SaveChangesWithRetries();
+            context.SaveChangesWithRetries(System.Data.Services.Client.SaveChangesOptions.Batch);
 
             // Create the pre-calculated JSON Blob
 
