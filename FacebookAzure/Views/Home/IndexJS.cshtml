@@ -14,6 +14,7 @@
             dataType: 'jsonp',
             jsonpCallback: 'dataCallback',
             success: function (data) {
+				var categories = {};
                 // Create the items
                 $.each(data, function (i, v) {
                     var $item = '<div class="like ' + v.Category + '">' + 
@@ -22,7 +23,22 @@
                     '<p class="category">' + v.Category + '</p>' + 
                     '</div>';
                     $('#container').append($item);
+					// Keep track of categories
+					if (categories[v.Category]) {
+						++categories[v.Category];
+					} else {
+						categories[v.Category] = 1;
+					}
                 });
+				// Create category filters
+				$.each(categories, function (i, v) {
+					$('#categories').append('<li><a href="#" data-filter="' + i + '">' + i + '</a> (' + v + ')</li>');
+				});
+				$('#categories a').click(function(){
+					var selector = '.' + $(this).attr('data-filter');
+					$('#container').isotope({ filter: selector });
+					return false;
+				});
                 // Call isotope
                 $('#container').isotope({
                     itemSelector: '.like'

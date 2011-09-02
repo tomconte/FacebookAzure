@@ -156,11 +156,25 @@ body {
 }
 
 .like {
-  width: 160px;
-  height: 110px;
-  margin: 5px;
-  float: left;
-  overflow: hidden;
-  position: relative;
-  background: #888;
+	width: 160px;
+	height: 110px;
+	margin: 5px;
+	padding: 5px;
+	float: left;
+	overflow: hidden;
+	position: relative;
+	background: #f7f7f7;
+	-moz-box-shadow: 5px 5px 5px #888;
+	-webkit-box-shadow: 5px 5px 5px #888;
+	box-shadow: 5px 5px 5px #888;
+}
+
+.like .name {
+	text-align: center;
+}
+
+.like .nb {
+	position: absolute;
+	right: 2px;
+	top: 2px;
 }
