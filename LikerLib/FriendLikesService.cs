@@ -84,7 +84,7 @@ namespace LikerLib
                 dynamic friends = fb.Get("me/friends");
                 foreach (var f in friends.data)
                 {
-                    dynamic likes = fb.Get(f.id + "/likes");
+                    dynamic likes = fb.Get(f.id + "/likes"); // TODO: exception handling
                     foreach (var l in likes.data)
                     {
                         if (FriendLikes.ContainsKey(l.id))
@@ -108,14 +108,16 @@ namespace LikerLib
 
             var context = tableClient.GetDataServiceContext();
 
+            // TODO: for refreshes, need to handle updating the entities (or replacing)
+            var n = 0;
             foreach (var k in FriendLikes.Keys)
             {
                 context.AddObject(FRIEND_LIKES_TABLE, FriendLikes[k]);
+                if (n++ % 100 == 0)
+                {
+                    context.SaveChangesWithRetries(System.Data.Services.Client.SaveChangesOptions.Batch);
+                }
             }
-
-            // TODO: for refreshes, need to handle updating the entities (or replacing)
-
-            context.SaveChangesWithRetries(System.Data.Services.Client.SaveChangesOptions.Batch);
 
             // Create the pre-calculated JSON Blob
 
