@@ -8,6 +8,7 @@ using Microsoft.WindowsAzure;
 using Microsoft.WindowsAzure.ServiceRuntime;
 using Microsoft.WindowsAzure.StorageClient;
 using Newtonsoft.Json;
+using System.Data.Services.Client;
 
 namespace LikerLib
 {
@@ -106,16 +107,17 @@ namespace LikerLib
         {
             // Persist friend likes to Table Storage
 
-            var context = tableClient.GetDataServiceContext();
+            var context = new TableServiceContextV2(tableClient.BaseUri.ToString(), tableClient.Credentials);
 
             // TODO: for refreshes, need to handle updating the entities (or replacing)
             var n = 0;
             foreach (var k in FriendLikes.Keys)
             {
-                context.AddObject(FRIEND_LIKES_TABLE, FriendLikes[k]);
+                context.AttachTo(FRIEND_LIKES_TABLE, FriendLikes[k]);
+                context.UpdateObject(FriendLikes[k]);
                 if (n++ % 100 == 0)
                 {
-                    context.SaveChangesWithRetries(System.Data.Services.Client.SaveChangesOptions.Batch);
+                    context.SaveChangesWithRetries(SaveChangesOptions.Batch|SaveChangesOptions.ReplaceOnUpdate);
                 }
             }
 

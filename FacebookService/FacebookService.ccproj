@@ -32,8 +32,9 @@
   </PropertyGroup>
   <!-- Items for the project -->
   <ItemGroup>
+    <ServiceConfiguration Include="ServiceConfiguration.Cloud.cscfg" />
     <ServiceDefinition Include="ServiceDefinition.csdef" />
-    <ServiceConfiguration Include="ServiceConfiguration.cscfg" />
+    <ServiceConfiguration Include="ServiceConfiguration.Local.cscfg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FacebookAzure\FacebookAzure.csproj">
