@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.Title = "Please Wait";
+}
+
+<h2>Please Wait ...</h2>
+
+<div id="message"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var id = @ViewBag.id;
+        setInterval(function () {
+            $.getJSON('http://localhost:81/likes/iscached/' + id, function (data) {
+                if (data == true) {
+                    window.location.href = "http://localhost:81/";
+                }
+                $('#message').append('wait...<br/>');
+            });
+        }, 2000);
+    });
+</script>
