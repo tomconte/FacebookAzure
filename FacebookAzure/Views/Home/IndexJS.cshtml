@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Index JavaScript";
+	ViewBag.Title = "Index JavaScript";
 }
 
 <h2>Hello @ViewBag.firstname</h2>
@@ -7,29 +7,29 @@
 <div id="container"></div>
 
 <script type="text/javascript"">
-    $(document).ready(function () {
-        var id = @ViewBag.id;
-        $.ajax({
-            url: 'http://127.0.0.1:10000/devstoreaccount1/friendlikes/' + id,
-            dataType: 'jsonp',
-            jsonpCallback: 'dataCallback',
-            success: function (data) {
+	$(document).ready(function () {
+		var id = @ViewBag.id;
+		$.ajax({
+			url: 'http://tcontepub.blob.core.windows.net/friendlikes/' + id,
+			dataType: 'jsonp',
+			jsonpCallback: 'dataCallback',
+			success: function (data) {
 				var categories = {};
-                // Create the items
-                $.each(data, function (i, v) {
-                    var $item = '<div class="like ' + v.Category + '">' + 
-                    '<h3 class="name">' + v.Name + '</h3>' + 
-                    '<p class="nb">' + v.Nb + '</p>' + 
-                    '<p class="category">' + v.Category + '</p>' + 
-                    '</div>';
-                    $('#container').append($item);
+				// Create the items
+				$.each(data, function (i, v) {
+					var $item = '<div class="like ' + v.Category + '">' + 
+					'<h3 class="name">' + v.Name + '</h3>' + 
+					'<p class="nb">' + v.Nb + '</p>' + 
+					'<p class="category">' + v.Category + '</p>' + 
+					'</div>';
+					$('#container').append($item);
 					// Keep track of categories
 					if (categories[v.Category]) {
 						++categories[v.Category];
 					} else {
 						categories[v.Category] = 1;
 					}
-                });
+				});
 				// Create category filters
 				$.each(categories, function (i, v) {
 					$('#categories').append('<li><a href="#" data-filter="' + i + '">' + i + '</a> (' + v + ')</li>');
@@ -39,11 +39,11 @@
 					$('#container').isotope({ filter: selector });
 					return false;
 				});
-                // Call isotope
-                $('#container').isotope({
-                    itemSelector: '.like'
-                });
-            }
-        });
-    });
+				// Call isotope
+				$('#container').isotope({
+					itemSelector: '.like'
+				});
+			}
+		});
+	});
 </script>
