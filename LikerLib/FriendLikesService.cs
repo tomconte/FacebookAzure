@@ -109,7 +109,7 @@ namespace LikerLib
 
             var context = new TableServiceContextV2(tableClient.BaseUri.ToString(), tableClient.Credentials);
 
-            // TODO: for refreshes, need to handle updating the entities (or replacing)
+            // Using the Upsert pattern in the August 2011 API
             var n = 0;
             foreach (var k in FriendLikes.Keys)
             {
