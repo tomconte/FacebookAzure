@@ -7,6 +7,7 @@ using Facebook;
 using Facebook.Web.Mvc;
 using Facebook.Web;
 using LikerLib;
+using Microsoft.WindowsAzure.ServiceRuntime;
 
 namespace FacebookAzure.Controllers
 {
@@ -26,6 +27,9 @@ namespace FacebookAzure.Controllers
             ViewBag.firstname = me.first_name;
 
             FriendLikesService service = new FriendLikesService(me.id, fb.AccessToken);
+
+            ViewBag.webUrl = RoleEnvironment.GetConfigurationSettingValue("WebURL");
+            ViewBag.blobUrl = RoleEnvironment.GetConfigurationSettingValue("BlobURL");
 
             if (service.isCached())
             {

@@ -6,17 +6,24 @@
 
 <div id="container"></div>
 
+<ul id="categories"></ul>
+
 <script type="text/javascript"">
 	$(document).ready(function () {
 		var id = @ViewBag.id;
+		var blobUrl = '@ViewBag.blobUrl';
 		$.ajax({
-			url: 'http://tcontepub.blob.core.windows.net/friendlikes/' + id,
+			url: blobUrl + '/friendlikes/' + id,
 			dataType: 'jsonp',
 			jsonpCallback: 'dataCallback',
 			success: function (data) {
 				var categories = {};
+				var count = 0;
 				// Create the items
 				$.each(data, function (i, v) {
+					if (count++ > 500) {
+						return;
+					}
 					var $item = '<div class="like ' + v.Category + '">' + 
 					'<h3 class="name">' + v.Name + '</h3>' + 
 					'<p class="nb">' + v.Nb + '</p>' + 

@@ -9,10 +9,12 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var id = @ViewBag.id;
+        var webUrl = @ViewBag.webUrl;
+        var blobUrl = @ViewBag.blobUrl;
         setInterval(function () {
-            $.getJSON('http://localhost:81/likes/iscached/' + id, function (data) {
+            $.getJSON(webUrl + '/likes/iscached/' + id, function (data) {
                 if (data == true) {
-                    window.location.href = "http://localhost:81/";
+                    window.location.href = webUrl + "/";
                 }
                 $('#message').append('wait...<br/>');
             });
