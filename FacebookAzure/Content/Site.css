@@ -83,8 +83,8 @@ body {
   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Arial, sans-serif;
   font-size: 13px;
   line-height: 1.7em;
-  background: #1F1E1D;
-  color: #FFF;
+  /*background: #1F1E1D;*/
+  /*color: #FFF;*/
 }
 
 h1, h2, h3, p, ul, ol, pre, dl {
