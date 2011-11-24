@@ -9,14 +9,20 @@
       </Site>
     </Sites>-->
     <Endpoints>
-      <InputEndpoint name="Endpoint1" protocol="http" port="80" />
+      <InputEndpoint name="http" protocol="http" port="80" />
+      <InputEndpoint name="https" protocol="https" port="443" certificate="ssl" />
     </Endpoints>
     <Imports>
       <Import moduleName="Diagnostics" />
     </Imports>
     <ConfigurationSettings>
       <Setting name="DataConnectionString" />
+      <Setting name="WebURL" />
+      <Setting name="BlobUrl" />
     </ConfigurationSettings>
+    <Certificates>
+      <Certificate name="ssl" storeLocation="LocalMachine" storeName="My" />
+    </Certificates>
   </WebRole>
   <WorkerRole name="FacebookWorker">
     <Imports>
