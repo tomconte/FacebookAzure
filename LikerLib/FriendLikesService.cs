@@ -80,9 +80,9 @@ namespace LikerLib
         {
             // Persist friend likes to Table Storage
 
-            var context = new TableServiceContextV2(tableClient.BaseUri.ToString(), tableClient.Credentials);
+            var context = new TableServiceContext(tableClient.BaseUri.ToString(), tableClient.Credentials);
 
-            // Using the Upsert pattern in the August 2011 API
+            // Using the Upsert pattern in the August 2011 API / November 2011 SDK (1.6)
             var n = 0;
             foreach (var k in FriendLikes.Keys)
             {
