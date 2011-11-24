@@ -22,7 +22,7 @@ namespace FacebookWorker
             var account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
 
             var queueClient = account.CreateCloudQueueClient();
-            var queue = queueClient.GetQueueReference("likesqueue");
+            var queue = queueClient.GetQueueReference(FriendLikesService.FRIEND_LIKES_QUEUE);
 
             while (true)
             {
@@ -36,7 +36,9 @@ namespace FacebookWorker
                     Trace.WriteLine("Processing " + p[0], "Information");
                     // TODO: start new thread
                     var service = new FriendLikesService(p[0], p[1]);
-                    // TODO: handle refreshes!
+                    // TODO: we probably need a way to refresh the data from time to time:
+                    // - test existence of the response BLOB
+                    // - refresh if blob older than n days/hours
                     if (service.isCached())
                     {
                         Trace.WriteLine("Already in cache, skipping " + p[0], "Information");
@@ -67,7 +69,7 @@ namespace FacebookWorker
             var account = CloudStorageAccount.Parse(RoleEnvironment.GetConfigurationSettingValue("DataConnectionString"));
 
             var queueClient = account.CreateCloudQueueClient();
-            var queue = queueClient.GetQueueReference("likesqueue");
+            var queue = queueClient.GetQueueReference(FriendLikesService.FRIEND_LIKES_QUEUE);
             queue.CreateIfNotExist();
 
             return base.OnStart();
