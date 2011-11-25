@@ -9,14 +9,19 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var id = @ViewBag.id;
-        var webUrl = @ViewBag.webUrl;
-        var blobUrl = @ViewBag.blobUrl;
+        var blobUrl = '@ViewBag.blobUrl';
+        var webUrl = '@ViewBag.webUrl';
         setInterval(function () {
-            $.getJSON(webUrl + '/likes/iscached/' + id, function (data) {
-                if (data == true) {
+            $.jsonp({
+                url: blobUrl + '/friendlikes/' + id,
+                dataType: 'jsonp',
+                callback: 'dataCallback',
+                success: function (data) {
                     window.location.href = webUrl + "/";
+                },
+                error: function () {
+                    $('#message').append('wait...<br/>');
                 }
-                $('#message').append('wait...<br/>');
             });
         }, 2000);
     });
