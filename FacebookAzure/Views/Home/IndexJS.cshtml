@@ -4,9 +4,11 @@
 
 <h2>Hello @ViewBag.firstname</h2>
 
-<div id="container"></div>
+<select id="categories">
+	<option>All</option>
+</select>
 
-<ul id="categories"></ul>
+<div id="container"></div>
 
 <script type="text/javascript"">
 	$(document).ready(function () {
@@ -39,10 +41,10 @@
 				});
 				// Create category filters
 				$.each(categories, function (i, v) {
-					$('#categories').append('<li><a href="#" data-filter="' + i + '">' + i + '</a> (' + v + ')</li>');
+					$('#categories').append('<option data-filter="' + i + '">' + i + ' (' + v + ')</option>');
 				});
-				$('#categories a').click(function(){
-					var selector = '.' + $(this).attr('data-filter');
+				$('#categories').change(function(){
+					var selector = '.' + $('#categories option:selected').attr('data-filter');
 					$('#container').isotope({ filter: selector });
 					return false;
 				});
