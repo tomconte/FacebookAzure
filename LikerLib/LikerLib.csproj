@@ -83,7 +83,6 @@
     <Compile Include="FriendLike.cs" />
     <Compile Include="FriendLikesService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TableServiceContextV2.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
