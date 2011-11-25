@@ -122,13 +122,11 @@ namespace LikerLib
         {
             var orderedLikes = new List<FriendLike>();
 
-            // Sort friend likes by descending number of likes
-            // Strip everything that does not have at least 2 likes
-
-            foreach (var l in FriendLikes.Where(k => k.Value.Nb > 1).OrderByDescending(k => k.Value.Nb))
-            {
-                orderedLikes.Add(l.Value);
-            }
+            orderedLikes = FriendLikes
+                .Where(k => k.Value.Nb > 1)
+                .OrderByDescending(k => k.Value.Nb)
+                .Select(l => l.Value)
+                .ToList();
 
             return orderedLikes;
         }
