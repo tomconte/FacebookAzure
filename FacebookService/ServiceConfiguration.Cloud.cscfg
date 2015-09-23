@@ -4,14 +4,14 @@
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=tcontepub;AccountKey=wbhiBBPzQ1ExHUHuYpOzL1mIMvvyr4fSxNfwcOL0F12RfMAOheH87HMgl9vG1rNRaJpOLPehpN7sSO2UjUuqeQ==" />
-      <Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=tcontepub;AccountKey=wbhiBBPzQ1ExHUHuYpOzL1mIMvvyr4fSxNfwcOL0F12RfMAOheH87HMgl9vG1rNRaJpOLPehpN7sSO2UjUuqeQ==" />
+      <Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=tcontepub;AccountKey=xxx" />
     </ConfigurationSettings>
   </Role>
   <Role name="FacebookWorker">
     <Instances count="1" />
     <ConfigurationSettings>
       <Setting name="Microsoft.WindowsAzure.Plugins.Diagnostics.ConnectionString" value="DefaultEndpointsProtocol=https;AccountName=tcontepub;AccountKey=wbhiBBPzQ1ExHUHuYpOzL1mIMvvyr4fSxNfwcOL0F12RfMAOheH87HMgl9vG1rNRaJpOLPehpN7sSO2UjUuqeQ==" />
-      <Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=tcontepub;AccountKey=wbhiBBPzQ1ExHUHuYpOzL1mIMvvyr4fSxNfwcOL0F12RfMAOheH87HMgl9vG1rNRaJpOLPehpN7sSO2UjUuqeQ==" />
+      <Setting name="DataConnectionString" value="DefaultEndpointsProtocol=https;AccountName=tcontepub;AccountKey=xxx" />
     </ConfigurationSettings>
   </Role>
 </ServiceConfiguration>
